@@ -37,9 +37,9 @@
   }
   .chip:active{transform:scale(.95);}
   .tip{font-size:12px;color:var(--soft);margin:10px 2px 6px;}
-  .tones{display:flex;gap:7px;margin:6px 0 12px;}
+  .tones{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 12px;}
   .tone{
-    flex:1;text-align:center;padding:9px 0;border-radius:12px;font-size:12.5px;
+    flex:1 1 70px;text-align:center;padding:9px 0;border-radius:12px;font-size:12.5px;
     border:1.5px solid #eee;background:#fafaff;color:var(--soft);cursor:pointer;
     transition:all .15s;user-select:none;
   }
@@ -96,7 +96,8 @@
       <div class="tones" id="tones">
         <div class="tone" data-tone="deadpan">😐 一本正经</div>
         <div class="tone" data-tone="hype">🚀 彩虹屁</div>
-        <div class="tone active" data-tone="chaos">🤡 离谱发癫</div>
+        <div class="tone active" data-tone="chaos">🤡 离谱</div>
+        <div class="tone" data-tone="warmth">🫶 走心</div>
       </div>
       <button class="go" id="go">给我发张夸夸卡</button>
 
@@ -282,6 +283,24 @@ var FLAVOR = {
   }
 };
 
+/* 升华挡（走心）：基于自我关怀(Neff)/正念(一行禅师)/全然接受(Brach)/阿德勒——笑完被轻轻暖一下。
+   不搞笑、真诚、扣"小事也值得被看见 + 对自己温柔"。 */
+var WARM = [
+  "其实不用做成什么样才值得被夸——你今天愿意好好待自己，就已经够了。",
+  "把你对朋友的那份温柔，也分一点给自己，好吗？今天你已经做得很好了。",
+  "这么小的事你都记得做，你比自己以为的，更认真地在好好生活。",
+  "不必非到高光时刻才算数，平平淡淡把今天过下来，本身就值得被看见。",
+  "你的好，不需要谁点头才成立；今天，为自己骄傲一下也没关系。",
+  "慢一点没关系，累了就歇会儿——你已经在往前走了，这就很了不起。",
+  "此刻你愿意停下来看看自己，就是对自己最大的温柔。",
+  "把今天这件小事收好，它是你在好好爱自己的一个小小证据。",
+  "你今天也辛苦了。这不是客套——是真的，辛苦了。",
+  "允许自己今天就这样，不够完美，也完全可以。"
+];
+var WARMOPEN = ["","其实，","跟你说句真的，","轻声说一句——"];
+var WARMTAIL = ["",""," 🤍"," 🌿"];
+var WCONN = ["，","——"];
+
 function _pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 
 function _clean(s){
@@ -301,20 +320,26 @@ function _trivia(text){
   return "";
 }
 
+function _seam(punch, tail){
+  // tail 以标点开头时去掉 punch 末尾终止标点，避免「。。」「。，」「。！」
+  if (/^[，。、！？!?]/.test(tail)) punch = punch.replace(/[。！？!?…]+$/, "");
+  return punch + tail;
+}
+
 function generate(text, flavor){
-  // 一句话：[轻开场]「你的小事」[连接] 一个笑点 [轻收尾]。
-  // 砍掉固定 pivot/权威/收尾的多段堆叠——那是“重复又太多”的根源。
-  var key = FLAVOR[flavor] ? flavor : "chaos";
-  var f = FLAVOR[key];
+  // 一句话：[开场]「你的小事」[连接] 笑点 / 走心 [收尾]。
   var raw = _clean(text);
   var subj = raw ? ("「" + raw + "」") : "你今天的存在本身";
+  // 升华挡：选「走心」必走暖句；其它挡 ~13% 概率突然来一句走心（笑完被轻轻暖一下）
+  if (flavor === "warmth" || Math.random() < 0.13){
+    return _pick(WARMOPEN) + subj + _pick(WCONN) + _seam(_pick(WARM), _pick(WARMTAIL));
+  }
+  var key = FLAVOR[flavor] ? flavor : "chaos";
+  var f = FLAVOR[key];
   var tl = _trivia(text);
   // 命中定制时 ~60% 用精准段子、~40% 串通用荒诞，避免“换一张”老是同一句
   var punch = tl ? (Math.random() < 0.6 ? tl : _pick(ABSURD)) : _pick(ABSURD);
-  var tail = _pick(f.tail);
-  // 接缝：punch 多以「。」收尾，tail 又以标点开头 → 去掉 punch 末尾终止标点，避免「。。」「。，」
-  if (/^[，。、！？!?]/.test(tail)) punch = punch.replace(/[。！？!?…]+$/, "");
-  return _pick(f.open) + subj + _pick(CONN) + punch + tail;
+  return _pick(f.open) + subj + _pick(CONN) + _seam(punch, _pick(f.tail));
 }
 
 /* node 自测入口 */
