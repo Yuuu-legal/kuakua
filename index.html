@@ -22,7 +22,7 @@
   .wrap{width:100%;max-width:460px;}
   .head{text-align:center;margin-bottom:16px;}
   .head h1{font-size:30px;margin:0 0 4px;letter-spacing:1px;}
-  .head p{margin:0;color:var(--soft);font-size:14px;line-height:1.5;}
+  .head p{margin:0;color:var(--soft);font-size:14px;line-height:1.55;}
   .panel{background:var(--card);border-radius:22px;padding:18px;box-shadow:0 18px 50px rgba(120,108,255,.16);}
   textarea{
     width:100%;border:1.5px solid #eee;border-radius:16px;padding:14px;
@@ -39,7 +39,7 @@
   .tip{font-size:12px;color:var(--soft);margin:10px 2px 6px;}
   .tones{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 12px;}
   .tone{
-    flex:1 1 70px;text-align:center;padding:9px 0;border-radius:12px;font-size:12.5px;
+    flex:1 1 80px;text-align:center;padding:9px 0;border-radius:12px;font-size:12.5px;
     border:1.5px solid #eee;background:#fafaff;color:var(--soft);cursor:pointer;
     transition:all .15s;user-select:none;
   }
@@ -51,20 +51,44 @@
   }
   .go:active{transform:scale(.98);}
 
-  /* 夸夸卡 */
-  .kcard{
-    display:none;margin-top:18px;border-radius:20px;padding:22px 20px 18px;
-    background:linear-gradient(160deg,#fffdf7,#fff2f7 60%,#f1ecff);
-    border:1.5px solid #ffe2c2;box-shadow:0 14px 36px rgba(246,183,60,.18);position:relative;
-  }
-  .kcard.show{display:block;animation:pop .28s ease;}
+  /* 夸夸卡（正反面翻牌：正面传播、背面走心） */
+  .cardwrap{display:none;margin-top:18px;perspective:1600px;}
+  .cardwrap.show{display:block;animation:pop .28s ease;}
   @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98);}to{opacity:1;transform:none;}}
-  .kcard .ktop{display:flex;align-items:center;justify-content:space-between;
-    font-size:13px;color:var(--gold);font-weight:700;letter-spacing:.5px;margin-bottom:12px;}
-  .kcard .kno{color:#caa64a;font-weight:600;font-size:12px;}
-  .kcard .kbody{font-size:18.5px;line-height:1.75;white-space:pre-wrap;min-height:54px;color:#3a3346;}
-  .kcard .kfoot{margin-top:14px;text-align:right;font-size:12px;color:#b9a6cf;font-style:italic;}
-  .kcard .kseal{position:absolute;right:16px;bottom:38px;font-size:30px;opacity:.18;transform:rotate(-12deg);}
+  .flip{
+    position:relative;transform-style:preserve-3d;cursor:pointer;
+    transition:transform .55s cubic-bezier(.4,.2,.2,1);
+  }
+  .flip.flipped{transform:rotateY(180deg);}
+  .face{
+    position:absolute;top:0;left:0;width:100%;
+    -webkit-backface-visibility:hidden;backface-visibility:hidden;
+    border-radius:20px;padding:22px 20px 42px;overflow:hidden;
+  }
+  .face.front{position:relative;
+    background:linear-gradient(160deg,#fffdf7,#fff2f7 60%,#f1ecff);
+    border:1.5px solid #ffe2c2;box-shadow:0 14px 36px rgba(246,183,60,.18);}
+  .face.back{transform:rotateY(180deg);height:100%;
+    display:flex;flex-direction:column;justify-content:center;text-align:center;
+    background:linear-gradient(160deg,#f3f7ff,#eef3ff 60%,#f7f0ff);
+    border:1.5px solid #d8e4ff;box-shadow:0 14px 36px rgba(124,108,255,.16);}
+
+  .ktop{display:flex;align-items:center;justify-content:space-between;
+    font-size:13px;color:var(--gold);font-weight:700;letter-spacing:.5px;}
+  .kno{color:#caa64a;font-weight:600;font-size:12px;}
+  .ktitle{display:inline-block;margin:13px 0 11px;padding:5px 13px;border-radius:30px;
+    font-size:13px;font-weight:700;letter-spacing:.3px;color:#a8530a;
+    background:linear-gradient(120deg,#ffe7b8,#ffd1e3);border:1px solid #ffd79e;
+    box-shadow:0 4px 12px rgba(246,183,60,.22);}
+  .kbody{font-size:18.5px;line-height:1.75;white-space:pre-wrap;min-height:88px;color:#3a3346;}
+  .kseal{position:absolute;right:16px;bottom:40px;font-size:30px;opacity:.16;transform:rotate(-12deg);}
+  .kfoot{margin-top:14px;font-size:12px;color:#b9a6cf;font-style:italic;text-align:right;}
+  .kflip{position:absolute;left:0;right:0;bottom:13px;text-align:center;
+    font-size:11.5px;color:#bfa9d6;letter-spacing:.3px;}
+
+  .btitle{font-size:14px;color:var(--accent2);font-weight:700;margin-bottom:14px;letter-spacing:.5px;}
+  .bbody{font-size:18px;line-height:1.9;color:#3b3550;white-space:pre-wrap;padding:0 4px;}
+  .bseal{font-size:26px;margin-top:16px;opacity:.5;}
 
   .row{display:none;gap:8px;margin-top:12px;}
   .row.show{display:flex;}
@@ -87,7 +111,7 @@
   <div class="wrap">
     <div class="head">
       <h1>夸夸卡 🏆</h1>
-      <p>说件今天的小事，越鸡毛蒜皮越好——<br>我用最离谱的逻辑，把它夸成惊天动地。</p>
+      <p>说件今天的小事，越鸡毛蒜皮越好——<br>正面我离谱地夸你，翻到背面，有句走心的悄悄话。</p>
     </div>
     <div class="panel">
       <textarea id="inp" placeholder="比如：我今天喝了一杯水…"></textarea>
@@ -97,15 +121,26 @@
         <div class="tone" data-tone="deadpan">😐 一本正经</div>
         <div class="tone" data-tone="hype">🚀 彩虹屁</div>
         <div class="tone active" data-tone="chaos">🤡 离谱</div>
-        <div class="tone" data-tone="warmth">🫶 走心</div>
       </div>
       <button class="go" id="go">给我发张夸夸卡</button>
 
-      <div class="kcard" id="kcard">
-        <div class="ktop"><span>🏆 夸夸卡</span><span class="kno" id="kno">No.0000</span></div>
-        <div class="kbody" id="kbody"></div>
-        <div class="kseal">🌈</div>
-        <div class="kfoot">—— 宇宙夸夸协会 荣誉认证</div>
+      <div class="cardwrap" id="cardwrap">
+        <div class="flip" id="flip">
+          <div class="face front">
+            <div class="ktop"><span>🏆 夸夸卡</span><span class="kno" id="kno">No.0000</span></div>
+            <div class="ktitle" id="ktitle">今日认证称号</div>
+            <div class="kbody" id="kbody"></div>
+            <div class="kseal">🌈</div>
+            <div class="kfoot">—— 宇宙夸夸协会 荣誉认证</div>
+            <div class="kflip">👆 轻点卡片翻面，背面有句悄悄话 🤍</div>
+          </div>
+          <div class="face back">
+            <div class="btitle">🤍 给你的悄悄话</div>
+            <div class="bbody" id="bbody"></div>
+            <div class="bseal">🌿</div>
+            <div class="kflip">👆 轻点翻回正面</div>
+          </div>
+        </div>
       </div>
       <div class="row" id="row">
         <div class="mini primary" id="again">🔁 换一张</div>
@@ -123,8 +158,9 @@
 <script>
 /* ============================================================
    无厘头夸夸引擎（纯函数，可被 node 单独 require 自测）
-   回显小事 →（刁钻定制 / 荒诞升格）→ 错位权威背书 → 封神收尾
-   卖点：夸得毫无逻辑、不成比例、一本正经地胡说八道
+   正面 genFront：回显小事 →（刁钻定制/荒诞升格）→ 错位权威背书 → 封神收尾（卖点：毫无逻辑地夸）
+   背面 genBack ：自我关怀(Neff)/正念(一行禅师)/全然接受(Brach)/阿德勒——笑完被轻轻暖一下
+   称号 genTitle：MBTI/抽卡式「今日认证称号」，给正面加网感、好截图传播
    ============================================================ */
 
 /* 主语与笑点之间的连接（多数用「？」），保持一句话 */
@@ -283,8 +319,30 @@ var FLAVOR = {
   }
 };
 
-/* 升华挡（走心）：基于自我关怀(Neff)/正念(一行禅师)/全然接受(Brach)/阿德勒——笑完被轻轻暖一下。
-   不搞笑、真诚、扣"小事也值得被看见 + 对自己温柔"。 */
+/* 称号池：MBTI/抽卡式「今日认证称号」——给正面加网感、好截图。每次生成随机一张（像抽卡）。 */
+var TITLES = [
+  "✨ 行走的多巴胺 · SSR",
+  "🏅 别人家的孩子 · 官方认证",
+  "🌟 人间高光体质 · 限定款",
+  "🔥 显眼包认证 · 全场最佳",
+  "💎 稀有度 ★★★★★ · 天选锦鲤",
+  "🌈 人形发光体 · 限量发行",
+  "🍀 反内耗 · 松弛感大师",
+  "☀️ 情绪稳定 · 内置太阳一颗",
+  "🎯 嘴替担当 · 满级出场",
+  "🐳 深海宝藏 · 已被打捞认证",
+  "🎁 今日份可爱 · 超额完成",
+  "👑 氛围感天花板 · SSR",
+  "🌻 活人感 MAX · 满格上线",
+  "🪐 宇宙级闪光选手 · 限定",
+  "🧋 小确幸收集家 · 满级",
+  "🦄 人间理想本体 · 绝版",
+  "📈 越活越上头 · 持续走高",
+  "💫 今日限定 · 王炸体质"
+];
+
+/* 升华挡（背面走心）：基于自我关怀(Neff)/正念(一行禅师)/全然接受(Brach)/阿德勒——不搞笑、真诚，
+   扣"小事也值得被看见 + 对自己温柔"。 */
 var WARM = [
   "其实不用做成什么样才值得被夸——你今天愿意好好待自己，就已经够了。",
   "把你对朋友的那份温柔，也分一点给自己，好吗？今天你已经做得很好了。",
@@ -299,7 +357,6 @@ var WARM = [
 ];
 var WARMOPEN = ["","其实，","跟你说句真的，","轻声说一句——"];
 var WARMTAIL = ["",""," 🤍"," 🌿"];
-var WCONN = ["，","——"];
 
 function _pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 
@@ -326,25 +383,38 @@ function _seam(punch, tail){
   return punch + tail;
 }
 
-function generate(text, flavor){
-  // 一句话：[开场]「你的小事」[连接] 笑点 / 走心 [收尾]。
+/* 正面：一句话离谱夸。[开场]「你的小事」[连接] 笑点 [收尾]。 */
+function genFront(text, flavor){
   var raw = _clean(text);
   var subj = raw ? ("「" + raw + "」") : "你今天的存在本身";
-  // 升华挡：选「走心」必走暖句；其它挡 ~13% 概率突然来一句走心（笑完被轻轻暖一下）
-  if (flavor === "warmth" || Math.random() < 0.13){
-    return _pick(WARMOPEN) + subj + _pick(WCONN) + _seam(_pick(WARM), _pick(WARMTAIL));
-  }
   var key = FLAVOR[flavor] ? flavor : "chaos";
   var f = FLAVOR[key];
   var tl = _trivia(text);
-  // 命中定制时 ~60% 用精准段子、~40% 串通用荒诞，避免“换一张”老是同一句
+  // 命中定制时 ~60% 用精准段子、~40% 串通用荒诞，避免"换一张"老是同一句
   var punch = tl ? (Math.random() < 0.6 ? tl : _pick(ABSURD)) : _pick(ABSURD);
   return _pick(f.open) + subj + _pick(CONN) + _seam(punch, _pick(f.tail));
 }
 
+/* 背面：走心悄悄话。让暖句独立成句、像一句真心话，不串损友腔。 */
+function genBack(text){
+  return _pick(WARMOPEN) + _seam(_pick(WARM), _pick(WARMTAIL));
+}
+
+/* 称号：MBTI/抽卡式认证，随机抽一张（像换卡也换称号）。 */
+function genTitle(){ return _pick(TITLES); }
+
+/* 兼容旧入口：warmth 走背面，其它走正面 */
+function generate(text, flavor){
+  return flavor === "warmth" ? genBack(text) : genFront(text, flavor);
+}
+
 /* node 自测入口 */
 if (typeof module !== "undefined" && module.exports){
-  module.exports = { generate: generate, _trivia: _trivia, _clean: _clean, TRIVIA: TRIVIA, FLAVOR: FLAVOR, ABSURD: ABSURD };
+  module.exports = {
+    generate: generate, genFront: genFront, genBack: genBack, genTitle: genTitle,
+    _trivia: _trivia, _clean: _clean,
+    TRIVIA: TRIVIA, FLAVOR: FLAVOR, ABSURD: ABSURD, WARM: WARM, TITLES: TITLES
+  };
 }
 
 /* ============================================================
@@ -353,13 +423,15 @@ if (typeof module !== "undefined" && module.exports){
 if (typeof document !== "undefined"){
   (function(){
     var inp=document.getElementById("inp"), go=document.getElementById("go"),
-        kcard=document.getElementById("kcard"), kbody=document.getElementById("kbody"),
-        kno=document.getElementById("kno"), row=document.getElementById("row"),
+        cardwrap=document.getElementById("cardwrap"), flip=document.getElementById("flip"),
+        kbody=document.getElementById("kbody"), bbody=document.getElementById("bbody"),
+        kno=document.getElementById("kno"), ktitle=document.getElementById("ktitle"),
+        row=document.getElementById("row"),
         again=document.getElementById("again"), copy=document.getElementById("copy"),
         save=document.getElementById("save"),
         tones=document.getElementById("tones"), chips=document.getElementById("chips"),
         toast=document.getElementById("toast");
-    var tone="chaos", cur="", typer=null;
+    var tone="chaos", curFront="", curBack="", typer=null;
 
     var EXAMPLES=["我今天喝了一杯水","我准时起床了","我没有赖床","我把一整碗饭吃完了",
                   "我今天没迟到","我回了一条消息","我出门走了走","我今天还活着"];
@@ -378,8 +450,7 @@ if (typeof document !== "undefined"){
       return "No." + ("0000"+n).slice(-4);
     }
     function typewrite(text){
-      cur=text; kcard.classList.add("show"); kbody.textContent="";
-      kno.textContent=randNo();
+      kbody.textContent="";
       if(typer) clearInterval(typer);
       var i=0;
       typer=setInterval(function(){
@@ -388,14 +459,26 @@ if (typeof document !== "undefined"){
       }, 26);
     }
     function praise(){
-      typewrite(generate(inp.value||"", tone));
+      var t = inp.value||"";
+      curFront = genFront(t, tone);
+      curBack  = genBack(t);
+      kno.textContent = randNo();
+      ktitle.textContent = genTitle();
+      bbody.textContent = curBack;
+      flip.classList.remove("flipped");   // 每张都从正面开始
+      cardwrap.classList.add("show");
       row.classList.add("show");
+      typewrite(curFront);
     }
+    // 轻点卡片翻面（正↔背）
+    flip.addEventListener("click", function(){ flip.classList.toggle("flipped"); });
+
     go.addEventListener("click", praise);
     again.addEventListener("click", praise);
     copy.addEventListener("click", function(){
-      if(!cur) return;
-      var full = "🏆 夸夸卡\n" + cur + "\n—— 宇宙夸夸协会 荣誉认证";
+      if(!curFront) return;
+      var full = "🏆 夸夸卡｜" + ktitle.textContent + "\n" + curFront +
+                 "\n\n🤍 " + curBack + "\n—— 宇宙夸夸协会 荣誉认证";
       if(navigator.clipboard && navigator.clipboard.writeText){
         navigator.clipboard.writeText(full).then(
           function(){ setToast("已复制 ✓ 去发给朋友吧"); },
@@ -403,13 +486,13 @@ if (typeof document !== "undefined"){
       } else { setToast("长按卡片文字可手动复制"); }
     });
 
-    // 纯 canvas 自画卡片导出 PNG（零依赖，保持单机）
-    function drawCard(text, noStr){
-      var W=660, pad=44, lh=44, headH=72, footH=82;
+    // 纯 canvas 自画正面卡片导出 PNG（零依赖，保持单机），含「今日认证称号」
+    function drawCard(front, title, noStr){
+      var W=660, pad=44, lh=44, headH=58, titleH=58, footH=80;
       var cvs=document.createElement("canvas"), ctx=cvs.getContext("2d");
       var bodyFont='600 30px "PingFang SC","Microsoft YaHei",sans-serif';
       ctx.font=bodyFont;
-      var maxW=W-pad*2, lines=[], paras=text.split("\n");
+      var maxW=W-pad*2, lines=[], paras=String(front).split("\n");
       paras.forEach(function(p){
         var cur="", chars=Array.from(p);
         for(var i=0;i<chars.length;i++){
@@ -420,29 +503,38 @@ if (typeof document !== "undefined"){
         lines.push(cur); lines.push("");
       });
       if(lines.length) lines.pop();
-      var H=pad+headH+lines.length*lh+footH, s=2;
+      var H=pad+headH+titleH+lines.length*lh+footH, s=2;
       cvs.width=W*s; cvs.height=H*s; ctx.scale(s,s);
       var g=ctx.createLinearGradient(0,0,W,H);
       g.addColorStop(0,"#fffdf7"); g.addColorStop(.6,"#fff2f7"); g.addColorStop(1,"#f1ecff");
       ctx.fillStyle=g;
       if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(0,0,W,H,28); ctx.fill(); } else ctx.fillRect(0,0,W,H);
       ctx.textBaseline="top";
+      // header
       ctx.font='700 26px "PingFang SC",sans-serif'; ctx.fillStyle="#e8a52f";
       ctx.fillText("🏆 夸夸卡",pad,pad);
       ctx.font='600 20px "PingFang SC",sans-serif'; ctx.fillStyle="#caa64a";
       ctx.textAlign="right"; ctx.fillText(noStr||"",W-pad,pad+4); ctx.textAlign="left";
+      // 称号 badge（圆角底 + 文字）
+      var ty=pad+headH;
+      ctx.font='700 22px "PingFang SC",sans-serif';
+      var tw=ctx.measureText(title||"").width, bw=tw+34, bh=38;
+      ctx.fillStyle="#ffe2c0";
+      if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(pad,ty,bw,bh,19); ctx.fill(); } else ctx.fillRect(pad,ty,bw,bh);
+      ctx.fillStyle="#a8530a"; ctx.fillText(title||"",pad+17,ty+8);
+      // body
       ctx.font=bodyFont; ctx.fillStyle="#3a3346";
-      var y=pad+headH;
+      var y=pad+headH+titleH;
       lines.forEach(function(ln){ ctx.fillText(ln,pad,y); y+=lh; });
-      ctx.font='64px serif'; ctx.globalAlpha=.15; ctx.fillText("🌈",W-pad-66,H-footH-8); ctx.globalAlpha=1;
+      ctx.font='64px serif'; ctx.globalAlpha=.15; ctx.fillText("🌈",W-pad-66,H-footH-2); ctx.globalAlpha=1;
       ctx.font='italic 20px "PingFang SC",sans-serif'; ctx.fillStyle="#b9a6cf";
       ctx.textAlign="right"; ctx.fillText("—— 宇宙夸夸协会 荣誉认证",W-pad,H-36); ctx.textAlign="left";
       return cvs;
     }
     save.addEventListener("click", function(){
-      if(!cur) return;
+      if(!curFront) return;
       try{
-        var url=drawCard(cur, kno.textContent).toDataURL("image/png");
+        var url=drawCard(curFront, ktitle.textContent, kno.textContent).toDataURL("image/png");
         var a=document.createElement("a"); a.href=url; a.download="夸夸卡.png";
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
         setToast("图片已生成 ✓ 没弹下载就长按图片保存");
@@ -455,7 +547,7 @@ if (typeof document !== "undefined"){
       var all=tones.querySelectorAll(".tone");
       for(var k=0;k<all.length;k++) all[k].classList.remove("active");
       el.classList.add("active");
-      if(cur) praise();
+      if(curFront) praise();
     });
     inp.addEventListener("keydown", function(e){
       if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); praise(); }
