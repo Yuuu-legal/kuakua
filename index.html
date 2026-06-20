@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>夸夸卡 · 多小的事我都能离谱地夸你</title>
+<style>
+  :root{
+    --bg1:#ffe9f0; --bg2:#e9f2ff; --bg3:#fff6e6;
+    --card:#ffffff; --ink:#2b2b3a; --soft:#9a9ab0;
+    --accent:#ff6f9c; --accent2:#7c6cff; --gold:#f6b73c;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    color:var(--ink);min-height:100vh;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2) 55%,var(--bg3));
+    background-attachment:fixed;
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .wrap{width:100%;max-width:460px;}
+  .head{text-align:center;margin-bottom:16px;}
+  .head h1{font-size:30px;margin:0 0 4px;letter-spacing:1px;}
+  .head p{margin:0;color:var(--soft);font-size:14px;line-height:1.5;}
+  .panel{background:var(--card);border-radius:22px;padding:18px;box-shadow:0 18px 50px rgba(120,108,255,.16);}
+  textarea{
+    width:100%;border:1.5px solid #eee;border-radius:16px;padding:14px;
+    font-size:16px;font-family:inherit;color:var(--ink);resize:none;height:64px;
+    outline:none;transition:border .2s;background:#fafaff;
+  }
+  textarea:focus{border-color:var(--accent2);}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 4px;}
+  .chip{
+    font-size:12.5px;padding:6px 11px;border-radius:30px;background:#f3f0ff;
+    color:var(--accent2);cursor:pointer;border:1px solid #ece8ff;transition:transform .08s;
+  }
+  .chip:active{transform:scale(.95);}
+  .tip{font-size:12px;color:var(--soft);margin:10px 2px 6px;}
+  .tones{display:flex;gap:7px;margin:6px 0 12px;}
+  .tone{
+    flex:1;text-align:center;padding:9px 0;border-radius:12px;font-size:12.5px;
+    border:1.5px solid #eee;background:#fafaff;color:var(--soft);cursor:pointer;
+    transition:all .15s;user-select:none;
+  }
+  .tone.active{border-color:var(--accent);background:#fff0f5;color:var(--accent);font-weight:600;}
+  .go{
+    width:100%;border:none;border-radius:16px;padding:15px;font-size:17px;font-weight:700;
+    color:#fff;background:linear-gradient(120deg,var(--accent),var(--accent2));cursor:pointer;
+    box-shadow:0 10px 24px rgba(255,111,156,.35);transition:transform .08s;
+  }
+  .go:active{transform:scale(.98);}
+
+  /* 夸夸卡 */
+  .kcard{
+    display:none;margin-top:18px;border-radius:20px;padding:22px 20px 18px;
+    background:linear-gradient(160deg,#fffdf7,#fff2f7 60%,#f1ecff);
+    border:1.5px solid #ffe2c2;box-shadow:0 14px 36px rgba(246,183,60,.18);position:relative;
+  }
+  .kcard.show{display:block;animation:pop .28s ease;}
+  @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98);}to{opacity:1;transform:none;}}
+  .kcard .ktop{display:flex;align-items:center;justify-content:space-between;
+    font-size:13px;color:var(--gold);font-weight:700;letter-spacing:.5px;margin-bottom:12px;}
+  .kcard .kno{color:#caa64a;font-weight:600;font-size:12px;}
+  .kcard .kbody{font-size:18.5px;line-height:1.75;white-space:pre-wrap;min-height:54px;color:#3a3346;}
+  .kcard .kfoot{margin-top:14px;text-align:right;font-size:12px;color:#b9a6cf;font-style:italic;}
+  .kcard .kseal{position:absolute;right:16px;bottom:38px;font-size:30px;opacity:.18;transform:rotate(-12deg);}
+
+  .row{display:none;gap:8px;margin-top:12px;}
+  .row.show{display:flex;}
+  .mini{
+    flex:1;border:1.5px solid #eee;background:#fff;border-radius:12px;padding:11px 0;
+    font-size:14px;color:var(--ink);cursor:pointer;text-align:center;transition:transform .08s;
+  }
+  .mini:active{transform:scale(.98);}
+  .mini.primary{border-color:var(--accent2);color:var(--accent2);font-weight:600;}
+  .foot{text-align:center;color:var(--soft);font-size:12px;margin-top:16px;line-height:1.6;}
+  .toast{
+    position:fixed;left:50%;bottom:36px;transform:translateX(-50%) translateY(20px);
+    background:#2b2b3a;color:#fff;padding:10px 18px;border-radius:30px;font-size:14px;
+    opacity:0;transition:all .25s;pointer-events:none;z-index:9;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <h1>夸夸卡 🏆</h1>
+      <p>说件今天的小事，越鸡毛蒜皮越好——<br>我用最离谱的逻辑，把它夸成惊天动地。</p>
+    </div>
+    <div class="panel">
+      <textarea id="inp" placeholder="比如：我今天喝了一杯水…"></textarea>
+      <div class="tip">懒得想？点一个试试 ↓</div>
+      <div class="chips" id="chips"></div>
+      <div class="tones" id="tones">
+        <div class="tone" data-tone="deadpan">😐 一本正经</div>
+        <div class="tone" data-tone="hype">🚀 彩虹屁</div>
+        <div class="tone active" data-tone="chaos">🤡 离谱发癫</div>
+      </div>
+      <button class="go" id="go">给我发张夸夸卡</button>
+
+      <div class="kcard" id="kcard">
+        <div class="ktop"><span>🏆 夸夸卡</span><span class="kno" id="kno">No.0000</span></div>
+        <div class="kbody" id="kbody"></div>
+        <div class="kseal">🌈</div>
+        <div class="kfoot">—— 宇宙夸夸协会 荣誉认证</div>
+      </div>
+      <div class="row" id="row">
+        <div class="mini primary" id="again">🔁 换一张</div>
+        <div class="mini" id="save">💾 存图</div>
+        <div class="mini" id="copy">📋 复制</div>
+      </div>
+    </div>
+    <div class="foot">
+      纯本地运行 · 不联网 · 不存任何数据<br>
+      截张图，发给那个今天也需要被夸一下的朋友 →
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   无厘头夸夸引擎（纯函数，可被 node 单独 require 自测）
+   回显小事 →（刁钻定制 / 荒诞升格）→ 错位权威背书 → 封神收尾
+   卖点：夸得毫无逻辑、不成比例、一本正经地胡说八道
+   ============================================================ */
+
+/* 把用户那句话郑重其事地接起来 */
+var PIVOT = [
+  "？你知道这有多了不起吗。",
+  "？——这绝不是普通人能完成的操作。",
+  "？我必须严肃地跟你谈谈这件事。",
+  "？全场起立，我没在开玩笑。",
+  "？这个难度，我得先吸一口气。",
+  "？历史性的一刻就这么发生了。",
+  "？我反复确认了三遍，是真的。",
+  "？这种事，百年难遇。"
+];
+
+/* 荒诞升格 / 伪数据 / 强行因果（通用，任何小事都能套） */
+var ABSURD = [
+  "全世界七十亿人，今天能做到这件事的，一只手数得过来。",
+  "你体内三十七万亿个细胞刚刚集体起立鼓掌，持续了整整零点八秒。",
+  "因为你做了这件事，地球今天的自转特别顺，科学家一脸懵。",
+  "这个操作的难度系数，奥运会都不敢把它设成正式项目。",
+  "达尔文要是看到，得连夜把进化论改写一整章。",
+  "据一份不太可靠的统计，这种成就每一百年才出现一点五次。",
+  "你刚刚不小心改写了人类能力的上限，记得低调。",
+  "宇宙大爆炸忙活了一百三十八亿年，好像就是为了等你这一下。",
+  "这件事的含金量，纯金看了都觉得自己掺了水。",
+  "时间都为你慢了半拍，就为了把这一刻看清楚。"
+];
+
+/* 错位权威背书 */
+var AUTH = [
+  "联合国连夜开了个会，一致决定给你发一座奖杯。",
+  "NASA 本来想挖你过去，结果被你的气场吓得不敢开口。",
+  "诺贝尔委员会表示，对应的奖项他们还没来得及设立。",
+  "你家楼下的保安听说之后，主动给你敬了个礼。",
+  "今晚月亮格外亮，那是它在偷偷给你打光。",
+  "物理学界连夜重写教材，就为了给你留个位置。",
+  "你的列祖列宗在族谱里集体露出了欣慰的微笑。",
+  "隔壁村的王大爷都听说了，直呼后生可畏。",
+  "连一向高冷的猫，都愿意多看你两眼。"
+];
+
+/* 刁钻定制：超常见的鸡毛蒜皮小事，命中就用更精准的离谱夸（替换升格层）。
+   注意顺序：更具体/更长的关键词在前，避免被宽泛词抢先命中。 */
+var TRIVIA = [
+  { kws:["喝水","喝了水","一杯水","喝水了","多喝水","喝口水","喝热水"],
+    line:"你居然准确地知道，水是用来喝的、而不是用来呼吸的——光这一条物种基础认知，就甩开了百分之九十九的鱼。" },
+  { kws:["没赖床","不赖床","没有赖床"],
+    line:"你拒绝了被窝的甜言蜜语，准时脱身——这种定力，唐僧来了都想拜你为师。" },
+  { kws:["起床","起了床","醒了","爬起来"],
+    line:"你今天同时战胜了地球引力和被窝的双重封印，成功起床——这是只有勇者才打得过的隐藏副本。" },
+  { kws:["早睡","早点睡","没熬夜","按时睡"],
+    line:"你今天打算早睡——在全民熬夜的时代，这种反潮流壮举，你的生物钟激动到当场痛哭流涕。" },
+  { kws:["吃水果","水果","吃了苹果","吃青菜","吃菜"],
+    line:"你主动向维生素伸出了手——在炸鸡奶茶的重重围剿下还记得吃口水果，你的免疫系统激动得连夜放了烟花。" },
+  { kws:["做饭","做了饭","自己做饭","下厨","煮饭"],
+    line:"你居然自己做了饭，从买菜到出锅一条龙，这种荒野求生级的生存能力，贝爷看了都想拜师。" },
+  { kws:["没点外卖","自己带饭","带了饭"],
+    line:"你拒绝了外卖的诱惑、自食其力喂饱了自己，这份自律，连你的钱包都流下了感动的泪水。" },
+  { kws:["吃饭","吃完","吃了饭","干饭","吃饱","早饭","午饭","晚饭"],
+    line:"你把一整碗饭精准地送进了胃里，零失误、零掉落，米其林评审看了感动到想哭。" },
+  { kws:["没迟到","准时到","按时","没有迟到","早到"],
+    line:"你和时间赛了一场跑，还赢了——爱因斯坦的相对论在你面前都得礼让三分。" },
+  { kws:["回消息","回了消息","回复","秒回","回了个"],
+    line:"你及时回复了消息——在这个已读不回横行的年代，你简直是数字文明最后的良心。" },
+  { kws:["走路","散步","走了走","遛弯","迈了腿","走了几步"],
+    line:"你用两条腿成功移动了身体，完美复刻了人类百万年进化的精华，直立行走的代言人非你莫属。" },
+  { kws:["呼吸","活着","还活着","喘气","没死","喘口气"],
+    line:"你今天一整天持续呼吸、一次都没忘——这种敬业精神，连你的肺都感动得想给你写感谢信。" },
+  { kws:["洗澡","洗头","刷牙","洗脸","洗漱"],
+    line:"你主动把自己收拾得干干净净，香气直冲云霄，方圆三里的空气都因此升了一个档次。" },
+  { kws:["叠被子","收拾房间","整理","归置"],
+    line:"你不仅起了床，还反手收拾了「犯罪现场」，这种善后能力，刑侦队都想请你去喝杯茶。" },
+  { kws:["洗碗","洗衣服","拖地","做家务","扫地","擦桌"],
+    line:"你出手平定了家务——油渍投降、灰尘溃散，厨房恢复和平，联合国维和部队都想给你发徽章。" },
+  { kws:["倒垃圾","扔垃圾","丢垃圾"],
+    line:"你把垃圾拎下了楼，完成了人类与熵增的又一次伟大斗争，热力学第二定律气得当场发抖。" },
+  { kws:["午睡","睡了个","睡觉","睡了","小憩","眯一会"],
+    line:"你懂得在恰当的时候让自己充电，这种顶级的自我管理智慧，连一天能睡二十小时的考拉都自愧不如。" },
+  { kws:["奶茶","咖啡","快乐水","可乐","喝了杯"],
+    line:"你精准地为自己投喂了一份快乐，情绪管理大师本师，多巴胺都排着队来感谢你。" },
+  { kws:["吃药","按时吃药","喝中药","吃了药"],
+    line:"你乖乖把药吃了，苦到灵魂出窍还是咽了下去——这份勇气，关羽刮骨疗毒看了都默默点头。" },
+  { kws:["运动","跑步","健身","俯卧撑","跳绳","锻炼","撸铁"],
+    line:"你今天动了起来——在万物皆想躺平的引力场里，你的肌肉发起了反抗，牛顿看了想撤回他的定律。" },
+  { kws:["没发火","忍住没","控制情绪","没生气","憋住"],
+    line:"你今天忍住没发火——情绪稳得像个得道高僧，佛祖都想找你交流一下修行心得。" },
+  { kws:["化妆","打扮","穿搭","收拾自己","捯饬"],
+    line:"你今天把自己拾掇得明明白白，颜值原地起飞，路过的摄像头都想开美颜——不，是它们配不上你。" },
+  { kws:["看书","读书","看了一页","背单词","看了会书"],
+    line:"你今天翻开了书、还看进去了——知识的大门为你虚掩，孔子在云端欣慰地捋了捋胡子。" },
+  { kws:["下班","干完活","写完了","交了作业","做完了","搞定工作"],
+    line:"你把活儿干完、准时收工，把「今日事今日毕」六个字焊在了身上，曾国藩的日记都想给你留个名额。" },
+  { kws:["没乱买","省钱","忍住没买","没花钱","攒钱","存钱"],
+    line:"你守住了钱包，在购物车的糖衣炮弹下稳如泰山，巴菲特看了悄悄掏出小本本记了一笔。" },
+  { kws:["哭了","想哭","哭出来","释放情绪"],
+    line:"你允许自己痛痛快快哭了一场——能把情绪释放出来，这种心理素质，心理学家想直接写进教科书。" },
+  { kws:["笑了","开心","心情好","高兴","乐了"],
+    line:"你今天笑了——这一笑，花儿绽放、街边的狗都摇起了尾巴，整个世界因此明亮了三个度。" },
+  { kws:["出去玩","逛街","出去走走","下了楼","出门"],
+    line:"你成功把自己运出了门，挣脱了家里的引力井，完成了从「家里蹲」到「人类」的华丽进化。" },
+  { kws:["到家","回家","平安到家","到家了"],
+    line:"你平安到家了——穿越车流人海的副本毫发无伤，这通关率，游戏主播看了都自愧不如。" },
+  { kws:["喂猫","喂狗","铲屎","浇花"],
+    line:"你照顾了一条小生命，它今天的幸福指数因你飙升，动物保护组织想颁你一座「年度铲屎官」。" },
+  { kws:["放下手机","没玩手机","少刷手机","戒手机"],
+    line:"你居然主动放下了手机，在算法的围追堵截中夺回了自己的注意力，乔布斯看了都得起立鼓掌。" },
+  { kws:["坚持","没放弃","又撑了一天","熬过来了","挺住"],
+    line:"你又撑过了一天，没投降、没缴械——这种续航能力，充电宝看了都想反过来给你充电。" }
+];
+
+var FLAVOR = {
+  deadpan:{
+    emoji:"😐",
+    open:["我需要严肃地说：","请注意，这是一份正式声明——","根据最新研究：","客观地讲，","我以专业的态度通知你：","经过审慎评估，"],
+    finale:["以上结论，经得起任何推敲。","此事，我不接受反驳。","数据不会说谎。","建议记入档案，永久保存。","这是一个不容忽视的事实。","报告完毕，谢谢配合。"]
+  },
+  hype:{
+    emoji:"🚀",
+    open:["啊啊啊啊啊！","天呐天呐天呐！","救命！！","全世界注意了！！","我不许任何人不知道：","尖叫吧朋友们——"],
+    finale:["你就是宇宙第一！！！","彩虹屁管够，今天无限续杯！","爱你爱你超级宇宙无敌爱你！","yyds，实至名归！！！","这一刻，必须封神！🎉","冲鸭，你最最最棒！！"]
+  },
+  chaos:{
+    emoji:"🤡",
+    open:["不是，你怎么做到的？？","这事得上新闻啊——","逆天了家人们，","我已经原地跪下了：","退退退，我退后给你让路——","刚刚发生了一件大事："],
+    finale:["散会，各回各家。","就这样，别问，问就是封神。","我先去缓缓，你太离谱了。","建议你低调点，免得引起群众恐慌。","完了，我词穷了，算你赢。","🤡 我磕一个。"]
+  }
+};
+
+function _pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+
+function _clean(s){
+  s = (s||"").replace(/\s+/g," ").trim();
+  s = s.replace(/[。.!！?？~～\s]+$/,"");           // 去掉句尾标点，接 PIVOT 更顺
+  if(s.length > 40) s = s.slice(0,40) + "…";
+  return s;
+}
+
+function _trivia(text){
+  var t = (text||"").toLowerCase();
+  for(var i=0;i<TRIVIA.length;i++){
+    for(var j=0;j<TRIVIA[i].kws.length;j++){
+      if(t.indexOf(TRIVIA[i].kws[j]) >= 0) return TRIVIA[i].line;
+    }
+  }
+  return "";
+}
+
+function generate(text, flavor){
+  var key = FLAVOR[flavor] ? flavor : "chaos";
+  var f = FLAVOR[key];
+  var raw = _clean(text);
+  var subj = raw ? ("「" + raw + "」") : "你今天的存在本身";
+  var mid = _trivia(text) || _pick(ABSURD);
+  var s1 = _pick(f.open) + subj + _pick(PIVOT);
+  var s3 = _pick(AUTH) + _pick(f.finale);
+  return s1 + "\n" + mid + "\n" + s3;
+}
+
+/* node 自测入口 */
+if (typeof module !== "undefined" && module.exports){
+  module.exports = { generate: generate, _trivia: _trivia, _clean: _clean, TRIVIA: TRIVIA, FLAVOR: FLAVOR, ABSURD: ABSURD };
+}
+
+/* ============================================================
+   页面交互（仅浏览器执行）
+   ============================================================ */
+if (typeof document !== "undefined"){
+  (function(){
+    var inp=document.getElementById("inp"), go=document.getElementById("go"),
+        kcard=document.getElementById("kcard"), kbody=document.getElementById("kbody"),
+        kno=document.getElementById("kno"), row=document.getElementById("row"),
+        again=document.getElementById("again"), copy=document.getElementById("copy"),
+        save=document.getElementById("save"),
+        tones=document.getElementById("tones"), chips=document.getElementById("chips"),
+        toast=document.getElementById("toast");
+    var tone="chaos", cur="", typer=null;
+
+    var EXAMPLES=["我今天喝了一杯水","我准时起床了","我没有赖床","我把一整碗饭吃完了",
+                  "我今天没迟到","我回了一条消息","我出门走了走","我今天还活着"];
+    EXAMPLES.forEach(function(ex){
+      var c=document.createElement("div"); c.className="chip"; c.textContent=ex;
+      c.addEventListener("click", function(){ inp.value=ex; praise(); });
+      chips.appendChild(c);
+    });
+
+    function setToast(msg){
+      toast.textContent=msg; toast.classList.add("show");
+      setTimeout(function(){ toast.classList.remove("show"); }, 1600);
+    }
+    function randNo(){
+      var n = 1 + Math.floor(Math.random()*9998);
+      return "No." + ("0000"+n).slice(-4);
+    }
+    function typewrite(text){
+      cur=text; kcard.classList.add("show"); kbody.textContent="";
+      kno.textContent=randNo();
+      if(typer) clearInterval(typer);
+      var i=0;
+      typer=setInterval(function(){
+        kbody.textContent = text.slice(0, i+1); i++;
+        if(i>=text.length){ clearInterval(typer); typer=null; }
+      }, 26);
+    }
+    function praise(){
+      typewrite(generate(inp.value||"", tone));
+      row.classList.add("show");
+    }
+    go.addEventListener("click", praise);
+    again.addEventListener("click", praise);
+    copy.addEventListener("click", function(){
+      if(!cur) return;
+      var full = "🏆 夸夸卡\n" + cur + "\n—— 宇宙夸夸协会 荣誉认证";
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(full).then(
+          function(){ setToast("已复制 ✓ 去发给朋友吧"); },
+          function(){ setToast("复制失败，截图也行"); });
+      } else { setToast("长按卡片文字可手动复制"); }
+    });
+
+    // 纯 canvas 自画卡片导出 PNG（零依赖，保持单机）
+    function drawCard(text, noStr){
+      var W=660, pad=44, lh=44, headH=72, footH=82;
+      var cvs=document.createElement("canvas"), ctx=cvs.getContext("2d");
+      var bodyFont='600 30px "PingFang SC","Microsoft YaHei",sans-serif';
+      ctx.font=bodyFont;
+      var maxW=W-pad*2, lines=[], paras=text.split("\n");
+      paras.forEach(function(p){
+        var cur="", chars=Array.from(p);
+        for(var i=0;i<chars.length;i++){
+          var t=cur+chars[i];
+          if(ctx.measureText(t).width>maxW && cur){ lines.push(cur); cur=chars[i]; }
+          else cur=t;
+        }
+        lines.push(cur); lines.push("");
+      });
+      if(lines.length) lines.pop();
+      var H=pad+headH+lines.length*lh+footH, s=2;
+      cvs.width=W*s; cvs.height=H*s; ctx.scale(s,s);
+      var g=ctx.createLinearGradient(0,0,W,H);
+      g.addColorStop(0,"#fffdf7"); g.addColorStop(.6,"#fff2f7"); g.addColorStop(1,"#f1ecff");
+      ctx.fillStyle=g;
+      if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(0,0,W,H,28); ctx.fill(); } else ctx.fillRect(0,0,W,H);
+      ctx.textBaseline="top";
+      ctx.font='700 26px "PingFang SC",sans-serif'; ctx.fillStyle="#e8a52f";
+      ctx.fillText("🏆 夸夸卡",pad,pad);
+      ctx.font='600 20px "PingFang SC",sans-serif'; ctx.fillStyle="#caa64a";
+      ctx.textAlign="right"; ctx.fillText(noStr||"",W-pad,pad+4); ctx.textAlign="left";
+      ctx.font=bodyFont; ctx.fillStyle="#3a3346";
+      var y=pad+headH;
+      lines.forEach(function(ln){ ctx.fillText(ln,pad,y); y+=lh; });
+      ctx.font='64px serif'; ctx.globalAlpha=.15; ctx.fillText("🌈",W-pad-66,H-footH-8); ctx.globalAlpha=1;
+      ctx.font='italic 20px "PingFang SC",sans-serif'; ctx.fillStyle="#b9a6cf";
+      ctx.textAlign="right"; ctx.fillText("—— 宇宙夸夸协会 荣誉认证",W-pad,H-36); ctx.textAlign="left";
+      return cvs;
+    }
+    save.addEventListener("click", function(){
+      if(!cur) return;
+      try{
+        var url=drawCard(cur, kno.textContent).toDataURL("image/png");
+        var a=document.createElement("a"); a.href=url; a.download="夸夸卡.png";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setToast("图片已生成 ✓ 没弹下载就长按图片保存");
+      }catch(err){ setToast("生成失败，直接截图也行"); }
+    });
+
+    tones.addEventListener("click", function(e){
+      var el=e.target.closest(".tone"); if(!el) return;
+      tone=el.getAttribute("data-tone");
+      var all=tones.querySelectorAll(".tone");
+      for(var k=0;k<all.length;k++) all[k].classList.remove("active");
+      el.classList.add("active");
+      if(cur) praise();
+    });
+    inp.addEventListener("keydown", function(e){
+      if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); praise(); }
+    });
+  })();
+}
+</script>
+</body>
+</html>
