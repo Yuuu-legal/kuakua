@@ -76,15 +76,17 @@
   .ktop{display:flex;align-items:center;justify-content:space-between;
     font-size:13px;color:var(--gold);font-weight:700;letter-spacing:.5px;}
   .kno{color:#caa64a;font-weight:600;font-size:12px;}
-  .ktitle{display:inline-block;margin:13px 0 11px;padding:5px 13px;border-radius:30px;
-    font-size:13px;font-weight:700;letter-spacing:.3px;color:#a8530a;
-    background:linear-gradient(120deg,#ffe7b8,#ffd1e3);border:1px solid #ffd79e;
-    box-shadow:0 4px 12px rgba(246,183,60,.22);}
+  .ktitle{display:inline-block;margin:13px 0 11px;padding:6px 14px;border-radius:30px;
+    font-size:13px;font-weight:800;letter-spacing:.3px;color:#9a4a06;
+    background:linear-gradient(120deg,#ffe2a6,#ffd0c4 55%,#ffd1e8);border:1px solid #ffce8f;
+    box-shadow:0 4px 14px rgba(246,183,60,.30),inset 0 1px 0 rgba(255,255,255,.65);}
   .kbody{font-size:18.5px;line-height:1.75;white-space:pre-wrap;min-height:88px;color:#3a3346;}
   .kseal{position:absolute;right:16px;bottom:40px;font-size:30px;opacity:.16;transform:rotate(-12deg);}
   .kfoot{margin-top:14px;font-size:12px;color:#b9a6cf;font-style:italic;text-align:right;}
   .kflip{position:absolute;left:0;right:0;bottom:13px;text-align:center;
-    font-size:11.5px;color:#bfa9d6;letter-spacing:.3px;}
+    font-size:11.5px;color:#bfa9d6;letter-spacing:.3px;
+    animation:breathe 2.4s ease-in-out infinite;}
+  @keyframes breathe{0%,100%{opacity:.5;}50%{opacity:1;}}
 
   .btitle{font-size:14px;color:var(--accent2);font-weight:700;margin-bottom:14px;letter-spacing:.5px;}
   .bbody{font-size:18px;line-height:1.9;color:#3b3550;white-space:pre-wrap;padding:0 4px;}
@@ -162,9 +164,6 @@
    背面 genBack ：自我关怀(Neff)/正念(一行禅师)/全然接受(Brach)/阿德勒——笑完被轻轻暖一下
    称号 genTitle：MBTI/抽卡式「今日认证称号」，给正面加网感、好截图传播
    ============================================================ */
-
-/* 主语与笑点之间的连接（多数用「？」），保持一句话 */
-var CONN = ["？","？","？","——","，"];
 
 /* 通用荒诞 punch：每条自成一句完整笑点，混多种梗机制（错位权威/伪数据/吉尼斯申遗/
    三段升级/营业体/反转自嘲/押韵/错位类比/官腔反差/比喻夸张），别只一种 shape */
@@ -338,7 +337,13 @@ var TITLES = [
   "🧋 小确幸收集家 · 满级",
   "🦄 人间理想本体 · 绝版",
   "📈 越活越上头 · 持续走高",
-  "💫 今日限定 · 王炸体质"
+  "💫 今日限定 · 王炸体质",
+  "🌙 反 emo 体质 · 已认证",
+  "🎬 自带主角光环 · 持证上岗",
+  "🔮 玄学锦鲤 · 本月最旺",
+  "🛟 人间充电宝 · 满电出场",
+  "🍭 嘴甜心善 · 双倍稀有",
+  "🏆 综合素质 · 全区第一"
 ];
 
 /* 升华挡（背面走心）：基于自我关怀(Neff)/正念(一行禅师)/全然接受(Brach)/阿德勒——不搞笑、真诚，
@@ -383,16 +388,15 @@ function _seam(punch, tail){
   return punch + tail;
 }
 
-/* 正面：一句话离谱夸。[开场]「你的小事」[连接] 笑点 [收尾]。 */
+/* 正面：一句话离谱夸。[开场] 笑点 [收尾]——不刻意复读用户原文，让夸像天降彩虹屁。
+   用户输入只用来"接住"场景（命中定制段子就更贴切），不在卡面回显「原话」。 */
 function genFront(text, flavor){
-  var raw = _clean(text);
-  var subj = raw ? ("「" + raw + "」") : "你今天的存在本身";
   var key = FLAVOR[flavor] ? flavor : "chaos";
   var f = FLAVOR[key];
   var tl = _trivia(text);
-  // 命中定制时 ~60% 用精准段子、~40% 串通用荒诞，避免"换一张"老是同一句
-  var punch = tl ? (Math.random() < 0.6 ? tl : _pick(ABSURD)) : _pick(ABSURD);
-  return _pick(f.open) + subj + _pick(CONN) + _seam(punch, _pick(f.tail));
+  // 命中定制时 ~65% 用精准段子、~35% 串通用荒诞，避免"换一张"老是同一句
+  var punch = tl ? (Math.random() < 0.65 ? tl : _pick(ABSURD)) : _pick(ABSURD);
+  return _pick(f.open) + _seam(punch, _pick(f.tail));
 }
 
 /* 背面：走心悄悄话。让暖句独立成句、像一句真心话，不串损友腔。 */
