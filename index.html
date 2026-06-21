@@ -37,6 +37,8 @@
   }
   .chip:active{transform:scale(.95);}
   .tip{font-size:12px;color:var(--soft);margin:10px 2px 6px;}
+  .reroll{color:var(--accent2);cursor:pointer;user-select:none;margin-left:6px;}
+  .reroll:active{opacity:.55;}
   .tones{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 12px;}
   .tone{
     flex:1 1 80px;text-align:center;padding:9px 0;border-radius:12px;font-size:12.5px;
@@ -117,7 +119,7 @@
     </div>
     <div class="panel">
       <textarea id="inp" placeholder="比如：我今天喝了一杯水…"></textarea>
-      <div class="tip">懒得想？点一个试试 ↓</div>
+      <div class="tip">懒得想？点一个试试 ↓ <span id="reroll" class="reroll">换一批 🔄</span></div>
       <div class="chips" id="chips"></div>
       <div class="tones" id="tones">
         <div class="tone" data-tone="deadpan">😐 一本正经</div>
@@ -650,6 +652,72 @@ function genBack(text){
 /* 称号：MBTI/抽卡式认证，随机抽一张（像换卡也换称号）。 */
 function genTitle(){ return _pick(TITLES); }
 
+/* 示例推荐：「点一个试试」也要有活人感——知道此刻几点、星期几、什么季节、什么节日，
+   给当下对味的例子(且尽量挑能触发活人感/场景层的句子)，而不是一年到头那固定几个。
+   纯离线：全靠 new Date() 现场判断；农历节日按已核实的公历日期表(2026-2028)命中。 */
+var EX_SLOT={
+  night:["又熬夜了","失眠睡不着","这点了还在肝","又通宵了"],
+  dawn:["居然没赖床","早起困成狗","一夜没睡好","又起晚了"],
+  morning:["开了一早上会","老板天天骂我","ddl就在今天","摸了一上午鱼"],
+  noon:["午饭吃撑了","只睡了二十分钟","又不想上班了","干完这顿想躺"],
+  afternoon:["又开会到现在","下午全在划水","好困撑不住","熬过这下午"],
+  evening:["终于下班了","还在加班","做了顿饭","跑了五公里"],
+  lateeve:["总算到家了","又点外卖了","刷手机停不下来","忙到现在才歇"]
+};
+var EX_WEEK={
+  mon:["又是周一好丧","熬过周一再说","周一就想请假"],
+  fri:["终于周五了","撑到周五不容易","马上就周末"],
+  weekend:["睡到自然醒","又宅了一整天","出去玩了一天"]
+};
+var EX_SEASON={
+  spring:["春困又犯了","换季过敏了","出门看花了"],
+  summer:["热到化了","靠空调续命","又熬夜看剧"],
+  autumn:["降温了好冷","秋天第一杯奶茶","又馋火锅了"],
+  winter:["冷到不想起床","被窝里出不来","手脚冰凉还在干活"]
+};
+var EX_SOUL=["我今天才看了两页书","累但还是把活干完了","我又熬夜了","我是不是很没用",
+             "总觉得不如别人","好歹把饭做了","我把房间收拾了"];
+var EX_SOLAR={
+  "1-1":["跨年熬到现在","新年第一天就赖床","立了一堆flag"],
+  "2-14":["情人节还单身","又一个人过节","给自己买了花"],
+  "3-8":["女神节到了","又被叫阿姨","今天必须夸我"],
+  "4-1":["差点被愚弄","今天没上当","愚人节整到人了"],
+  "5-1":["终于放假了","劳动节还加班","出去玩累瘫"],
+  "6-1":["六一我还是宝宝","今天想当回小孩","童心未泯"],
+  "9-10":["教书一天好累","谢谢老师","批作业到现在"],
+  "10-1":["国庆人挤人","在家躺平过节","堵在高速上"],
+  "11-11":["又剁手了","购物车清空","忍住没乱买"],
+  "12-24":["平安夜一个人","收到苹果了","今晚有点想家"],
+  "12-25":["圣诞又没人陪","给自己买了礼物","圣诞快乐"],
+  "12-31":["今年最后一天","熬夜跨年","回顾这一年好累"]
+};
+var EX_LUNAR_DATE={   // 农历节日→公历日期(2026-2028 已核实)；key=年-月-日
+  "2026-2-17":"chunjie","2026-3-3":"yuanxiao","2026-6-19":"duanwu","2026-8-19":"qixi","2026-9-25":"zhongqiu",
+  "2027-2-6":"chunjie","2027-2-20":"yuanxiao","2027-6-9":"duanwu","2027-8-8":"qixi","2027-9-15":"zhongqiu",
+  "2028-1-26":"chunjie","2028-2-9":"yuanxiao","2028-5-28":"duanwu","2028-10-3":"zhongqiu"
+};
+var EX_LUNAR={
+  chunjie:["过年又被催婚","年夜饭吃撑了","抢红包手速最快","又长一岁了","走亲戚走累了"],
+  yuanxiao:["汤圆吃了好几个","看花灯去了","十五月亮真圆"],
+  duanwu:["粽子炫了仨","端午还在加班","龙舟看得起劲"],
+  qixi:["七夕又单着","七夕还在加班","给自己买了花"],
+  zhongqiu:["中秋没回成家","月饼吃腻了","赏月有点想家","中秋还在值班"]
+};
+function buildExamples(now){
+  var d=now||new Date(), h=d.getHours(), dow=d.getDay(), mo=d.getMonth()+1, day=d.getDate();
+  var ymd=d.getFullYear()+"-"+mo+"-"+day, md=mo+"-"+day, fest=[];
+  if(EX_LUNAR_DATE[ymd]) fest=EX_LUNAR[EX_LUNAR_DATE[ymd]].slice();
+  else if(EX_SOLAR[md]) fest=EX_SOLAR[md].slice();
+  var slot=h<5?"night":h<9?"dawn":h<11?"morning":h<14?"noon":h<18?"afternoon":h<21?"evening":"lateeve";
+  var week=dow===1?EX_WEEK.mon:dow===5?EX_WEEK.fri:(dow===0||dow===6)?EX_WEEK.weekend:[];
+  var sea=(mo>=3&&mo<=5)?"spring":(mo>=6&&mo<=8)?"summer":(mo>=9&&mo<=11)?"autumn":"winter";
+  var rest=[].concat(EX_SLOT[slot],week,EX_SEASON[sea],EX_SOUL);
+  for(var i=rest.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=rest[i];rest[i]=rest[j];rest[j]=t;}
+  var out=[],seen={};
+  fest.concat(rest).forEach(function(x){ if(x&&!seen[x]){seen[x]=1;out.push(x);} });
+  return out.slice(0,8);
+}
+
 /* 兼容旧入口：warmth 走背面，其它走正面 */
 function generate(text, flavor){
   return flavor === "warmth" ? genBack(text) : genFront(text, flavor);
@@ -660,6 +728,7 @@ if (typeof module !== "undefined" && module.exports){
   module.exports = {
     generate: generate, genFront: genFront, genBack: genBack, genTitle: genTitle,
     _trivia: _trivia, _scene: _scene, _soul: _soul, _echo: _echo, _clean: _clean, _isNeg: _isNeg,
+    buildExamples: buildExamples,
     TRIVIA: TRIVIA, SCENE: SCENE, FLAVOR: FLAVOR, ABSURD: ABSURD, NEG: NEG, WARM: WARM, TITLES: TITLES
   };
 }
@@ -677,16 +746,21 @@ if (typeof document !== "undefined"){
         again=document.getElementById("again"), copy=document.getElementById("copy"),
         save=document.getElementById("save"),
         tones=document.getElementById("tones"), chips=document.getElementById("chips"),
+        reroll=document.getElementById("reroll"),
         toast=document.getElementById("toast");
     var tone="chaos", curFront="", curBack="", typer=null;
 
-    var EXAMPLES=["我今天喝了一杯水","我准时起床了","我没有赖床","我把一整碗饭吃完了",
-                  "我今天没迟到","我今天还活着","我今天好累","我不想上班"];
-    EXAMPLES.forEach(function(ex){
-      var c=document.createElement("div"); c.className="chip"; c.textContent=ex;
-      c.addEventListener("click", function(){ inp.value=ex; praise(); });
-      chips.appendChild(c);
-    });
+    /* 示例 = 引擎 buildExamples 按此刻(几点/星期/季节/节日)现场组装；每次加载 +「换一批」重组 */
+    function renderChips(){
+      chips.innerHTML="";
+      buildExamples().forEach(function(ex){
+        var c=document.createElement("div"); c.className="chip"; c.textContent=ex;
+        c.addEventListener("click", function(){ inp.value=ex; praise(); });
+        chips.appendChild(c);
+      });
+    }
+    renderChips();
+    if(reroll) reroll.addEventListener("click", renderChips);
 
     function setToast(msg){
       toast.textContent=msg; toast.classList.add("show");
